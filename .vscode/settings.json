@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/2f9c3c6c-07ae-4003-8398-059b224d3ac9/resourceGroups/AkResource/providers/Microsoft.Web/sites/alok-saas-lab",
+    "appService.deploySubpath": "my_app\\build"
+}

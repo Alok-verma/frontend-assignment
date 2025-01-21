@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 import {table_api} from "./apiEndpoints"
 export const fetchData = async () => {
     try {

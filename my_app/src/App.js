@@ -1,6 +1,7 @@
+
+import React, { useEffect, useState, useMemo } from 'react';
+import { fetchData } from './api';
 import './App.css';
-import { useEffect, useState } from 'react';
-import { fetchData} from "./api"
 
 const App = () => {
   const [data, setData] = useState([]);
@@ -8,49 +9,40 @@ const App = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  // API call to fetch data
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const result = await fetchData();
+        setData(result && result.length > 0 ? result : []);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getData();
+  }, []);
 
-
-// api calling 
-useEffect(() => {
-  getData();
-}, []);
-
-//  function to get data
-const getData = async () => {
-  try {
-    const result = await fetchData(); 
-    console.log("alokres", result);
-    if (result && result.length > 0) {
-      setData(result);
-    } else {
-      setData([]);
-    }
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    setData([]);
-  } finally {
-    setLoading(false);
-  }
-};
-
-// funtionn to get total number of pages
+  // Calculate total pages dynamically
   const totalPages = Math.ceil(data.length / itemsPerPage);
 
-  // funxtion to display data
-  const displayedData = data.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  // Get the displayed data for the current page
+  const displayedData = useMemo(() => {
+    const startIdx = (currentPage - 1) * itemsPerPage;
+    const endIdx = currentPage * itemsPerPage;
+    return data.slice(startIdx, endIdx);
+  }, [data, currentPage]);
 
-
-  // data binding on page change 
+  // Handle page change
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
   };
 
-  // function to get page number
+  // Generate pagination numbers
   const getPaginationNumbers = () => {
     const maxPageNumbersToShow = 5;
     const pages = [];
@@ -77,75 +69,61 @@ const getData = async () => {
     return pages;
   };
 
-  if (loading) return <div className="loading">Loading...</div>;
-
   return (
-    <div className="app-container">
-      <div className="content">
-        <h3 className="title">Saas Lab Project</h3>
-        <table className="table table-bordered">
-          <thead>
-            <tr>
-              <th>S.No</th>
-              <th>Percentage Funded</th>
-              <th>Amount Pledged</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayedData.map((item, index) => (
-              <tr key={index}>
-                <td>{item["s.no"]}</td>
-                <td>{item["percentage.funded"]}</td>
-                <td>{item["amt.pledged"]}</td>
+    <div className="app-container" data-testid="main">
+      {loading ? (
+        <div className="loading">Loading...</div>
+      ) : (
+        <div className="content">
+          <h3 className="title">Saas Lab Project</h3>
+          <table className="table table-bordered">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Percentage Funded</th>
+                <th>Amount Pledged</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {displayedData?.map((item, index) => (
+                <tr key={index}>
+                  <td>{item["s.no"]}</td>
+                  <td>{item["percentage.funded"]}</td>
+                  <td>{item["amt.pledged"]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-        <nav>
-          <ul className="pagination justify-content-center">
-            <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-              <button
-                className="page-link"
-                onClick={() => handlePageChange(currentPage - 1)}
-              >
-                Previous
-              </button>
-            </li>
-            {getPaginationNumbers().map((page, index) =>
-              typeof page === 'number' ? (
-                <li
-                  key={index}
-                  className={`page-item ${currentPage === page ? 'active' : ''}`}
-                >
-                  <button
-                    className="page-link"
-                    onClick={() => handlePageChange(page)}
-                  >
-                    {page}
-                  </button>
-                </li>
-              ) : (
-                <li key={index} className="page-item disabled">
-                  <span className="page-link">...</span>
-                </li>
-              )
-            )}
-            <li
-              className={`page-item ${
-                currentPage === totalPages ? 'disabled' : ''
-              }`}
-            >
-              <button
-                className="page-link"
-                onClick={() => handlePageChange(currentPage + 1)}
-              >
-                Next
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </div>
+          <nav>
+            <ul className="pagination justify-content-center">
+              <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>
+                  Previous
+                </button>
+              </li>
+              {getPaginationNumbers().map((page, index) =>
+                typeof page === 'number' ? (
+                  <li key={index} className={`page-item ${currentPage === page ? 'active' : ''}`}>
+                    <button className="page-link" onClick={() => handlePageChange(page)}>
+                      {page}
+                    </button>
+                  </li>
+                ) : (
+                  <li key={index} className="page-item disabled">
+                    <span className="page-link">...</span>
+                  </li>
+                )
+              )}
+              <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>
+                  Next
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      )}
     </div>
   );
 };
