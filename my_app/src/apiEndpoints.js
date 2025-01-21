@@ -1,0 +1,1 @@
+export const table_api= 'https://raw.githubusercontent.com/saaslabsco/frontend-assignment/refs/heads/master/frontend-assignment.json'
